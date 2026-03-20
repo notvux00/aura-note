@@ -11,6 +11,17 @@ export function useNotes(userId: string | undefined) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Helper to map DB record to Note type
+  const mapDbNoteToNote = useCallback((d: any): Note => ({
+    id: String(d.id),
+    title: String(d.title),
+    content: String(d.body),
+    createdAt: new Date(String(d.created_at)).getTime(),
+    updatedAt: new Date(String(d.updated_at)).getTime(),
+    dueDate: d.due_date ? new Date(String(d.due_date)).getTime() : null,
+    completed: Boolean(d.is_completed),
+  }), []);
+
   // Function to load notes from Supabase
   const loadNotesFromSupabase = useCallback(async () => {
     if (!userId) {
@@ -23,29 +34,19 @@ export function useNotes(userId: string | undefined) {
       const { data, error } = await supabase
         .from("notes")
         .select("*")
+        .eq("user_id", userId)
         .order("updated_at", { ascending: false });
 
       if (error) throw error;
 
-      // Transform snake_case from DB back to camelCase for frontend
-      const formattedNotes: Note[] = data.map((d: Record<string, string | boolean | null>) => ({
-        id: String(d.id),
-        title: String(d.title),
-        content: String(d.body),
-        createdAt: new Date(String(d.created_at)).getTime(),
-        updatedAt: new Date(String(d.updated_at)).getTime(),
-        dueDate: d.due_date ? new Date(String(d.due_date)).getTime() : null,
-        completed: Boolean(d.is_completed),
-      }));
-
-      setNotes(formattedNotes);
+      setNotes(data.map(mapDbNoteToNote));
     } catch (e) {
       console.error("Failed to load notes from Supabase", e);
       setError("Không thể lấy ghi chú. Vui lòng kiểm tra lại kết nối mạng!");
     } finally {
       setIsLoaded(true);
     }
-  }, [userId]);
+  }, [userId, mapDbNoteToNote]);
 
   useEffect(() => {
     // Wipe local storage data as requested to save space
@@ -60,7 +61,44 @@ export function useNotes(userId: string | undefined) {
     }
 
     loadNotesFromSupabase();
-  }, [loadNotesFromSupabase]);
+
+    // Subscribe to Realtime changes
+    if (!userId) return;
+
+    const channel = supabase
+      .channel(`public:notes:user=${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "notes",
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            const newNote = mapDbNoteToNote(payload.new);
+            setNotes((prev) => {
+              if (prev.find((n) => n.id === newNote.id)) return prev;
+              return [newNote, ...prev];
+            });
+          } else if (payload.eventType === "UPDATE") {
+            const updatedNote = mapDbNoteToNote(payload.new);
+            setNotes((prev) =>
+              prev.map((n) => (n.id === updatedNote.id ? updatedNote : n))
+            );
+          } else if (payload.eventType === "DELETE") {
+            const deletedId = String(payload.old.id);
+            setNotes((prev) => prev.filter((n) => n.id !== deletedId));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId, loadNotesFromSupabase, mapDbNoteToNote]);
 
   const addNote = async (
     title: string,

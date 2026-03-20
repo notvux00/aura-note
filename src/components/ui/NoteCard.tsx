@@ -9,11 +9,12 @@ import { MarkdownRenderer } from "./MarkdownRenderer";
 interface NoteCardProps {
   note: Note;
   onEdit: (note: Note) => void;
+  onView: (note: Note) => void;
   onDelete: (id: string) => void;
   onToggleComplete: (id: string) => void;
 }
 
-export function NoteCard({ note, onEdit, onDelete, onToggleComplete }: NoteCardProps) {
+export function NoteCard({ note, onEdit, onView, onDelete, onToggleComplete }: NoteCardProps) {
   
   const getDueDateStatus = () => {
     if (!note.dueDate || note.completed) return "normal";
@@ -28,16 +29,20 @@ export function NoteCard({ note, onEdit, onDelete, onToggleComplete }: NoteCardP
     <div 
       className={cn(
         "group relative flex flex-col gap-3 rounded-xl p-5 transition-all duration-300",
-        "glass-panel hover:-translate-y-1 hover:shadow-xl",
+        "glass-panel hover:-translate-y-1 hover:shadow-xl cursor-pointer",
         status === "overdue" && "border-danger/20 shadow-sm",
         status === "soon" && "border-warning/30 shadow-sm",
         note.completed && "opacity-60 grayscale hover:opacity-100 border-border/50 bg-surface-hover"
       )}
+      onClick={() => onView(note)}
     >
       {/* Header Layout */}
       <div className="flex items-start justify-between gap-4">
         <button 
-          onClick={() => onToggleComplete(note.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleComplete(note.id);
+          }}
           className="mt-1 flex-shrink-0 text-muted hover:text-accent transition-colors focus:outline-none"
         >
           {note.completed ? (
@@ -88,13 +93,19 @@ export function NoteCard({ note, onEdit, onDelete, onToggleComplete }: NoteCardP
         </span>
         <div className="flex items-center gap-2">
           <button 
-            onClick={() => onEdit(note)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(note);
+            }}
             className="p-1.5 rounded-md text-muted hover:text-foreground hover:bg-surface-hover transition-colors"
           >
             <Edit2 className="w-4 h-4" />
           </button>
           <button 
-            onClick={() => onDelete(note.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(note.id);
+            }}
             className="p-1.5 rounded-md text-muted hover:text-danger hover:bg-danger/10 transition-colors"
           >
             <Trash2 className="w-4 h-4" />

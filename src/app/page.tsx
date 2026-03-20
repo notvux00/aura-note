@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { useNotes } from "@/hooks/useNotes";
 import { NoteCard } from "@/components/ui/NoteCard";
 import { NoteForm } from "@/components/ui/NoteForm";
+import { NoteView } from "@/components/ui/NoteView";
 import { Note } from "@/types/note";
 import { Plus, NotebookPen, LogOut } from "lucide-react";
 
@@ -47,6 +48,7 @@ export default function Dashboard() {
   
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | undefined>();
+  const [viewingNote, setViewingNote] = useState<Note | undefined>();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -78,6 +80,10 @@ export default function Dashboard() {
   const handleEdit = (note: Note) => {
     setEditingNote(note);
     setIsFormOpen(true);
+  };
+
+  const handleView = (note: Note) => {
+    setViewingNote(note);
   };
 
   const handleSave = (title: string, content: string, dueDate: number | null) => {
@@ -180,6 +186,7 @@ export default function Dashboard() {
               key={note.id} 
               note={note} 
               onEdit={handleEdit}
+              onView={handleView}
               onDelete={deleteNote}
               onToggleComplete={toggleCompleted}
             />
@@ -193,6 +200,13 @@ export default function Dashboard() {
           initialData={editingNote} 
           onSave={handleSave} 
           onCancel={() => setIsFormOpen(false)} 
+        />
+      )}
+
+      {viewingNote && (
+        <NoteView 
+          note={viewingNote} 
+          onClose={() => setViewingNote(undefined)} 
         />
       )}
     </main>

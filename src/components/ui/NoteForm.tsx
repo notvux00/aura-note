@@ -28,7 +28,10 @@ export function NoteForm({ initialData, onSave, onCancel }: NoteFormProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200"
+      onClick={onCancel}
+    >
       <div 
         className="w-full max-w-lg glass-panel rounded-2xl p-6 shadow-2xl animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
@@ -72,8 +75,14 @@ export function NoteForm({ initialData, onSave, onCancel }: NoteFormProps) {
                 type="datetime-local"
                 value={dueDateStr}
                 onChange={(e) => setDueDateStr(e.target.value)}
-                className="w-full bg-surface/50 border border-border rounded-xl py-2.5 pl-10 pr-4 text-sm text-foreground focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/50 transition-all color-scheme-dark"
-                style={{ colorScheme: "dark" }}
+                onClick={(e) => {
+                  try {
+                    e.currentTarget.showPicker?.();
+                  } catch (err) {
+                    // Ignore gesture errors, fallback to native browser behavior
+                  }
+                }}
+                className="w-full bg-surface/50 border border-border rounded-xl py-2.5 pl-10 pr-4 text-sm text-foreground focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/50 transition-all"
               />
             </div>
             
