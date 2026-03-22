@@ -74,11 +74,16 @@ export function NoteForm({ initialData, onSave, onCancel }: NoteFormProps) {
               <input
                 type="datetime-local"
                 value={dueDateStr}
-                onChange={(e) => setDueDateStr(e.target.value)}
+                onChange={(e) => {
+                  setDueDateStr(e.target.value);
+                  if (e.target.value) {
+                    e.target.blur();
+                  }
+                }}
                 onClick={(e) => {
                   try {
                     e.currentTarget.showPicker?.();
-                  } catch (err) {
+                  } catch {
                     // Ignore gesture errors, fallback to native browser behavior
                   }
                 }}

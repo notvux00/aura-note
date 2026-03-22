@@ -42,10 +42,23 @@ export default function LoginPage() {
 
   const signInWithGoogle = async () => {
     try {
+      const getURL = () => {
+        let url =
+          process.env.NEXT_PUBLIC_SITE_URL ?? // Custom site URL
+          process.env.NEXT_PUBLIC_VERCEL_URL ?? // Automatically set by Vercel
+          window.location.origin; // Fallback to current browser origin
+        
+        // Make sure to include https:// if not present (for Vercel env var)
+        url = url.includes("http") ? url : `https://${url}`;
+        // Ensure it ends with /
+        url = url.charAt(url.length - 1) === "/" ? url : `${url}/`;
+        return url;
+      };
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/`,
+          redirectTo: getURL(),
         },
       });
       if (error) throw error;

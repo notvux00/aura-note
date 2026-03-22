@@ -207,6 +207,7 @@ export default function Dashboard() {
         <NoteView 
           note={viewingNote} 
           onClose={() => setViewingNote(undefined)} 
+          onToggleComplete={toggleCompleted}
         />
       )}
     </main>
