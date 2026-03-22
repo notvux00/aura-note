@@ -12,8 +12,8 @@ interface MarkdownRendererProps {
 export function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
   return (
     <div className={cn(
-      "prose prose-sm prose-slate max-w-none break-words",
-      "prose-p:leading-relaxed prose-p:my-1",
+      "prose prose-sm prose-slate dark:prose-invert max-w-none break-words",
+      "prose-p:leading-relaxed prose-p:my-1 prose-p:text-foreground",
       "prose-a:text-accent prose-a:no-underline hover:prose-a:underline",
       "prose-strong:text-foreground prose-strong:font-semibold",
       "prose-ul:my-2 prose-ul:list-disc prose-li:my-0.5",

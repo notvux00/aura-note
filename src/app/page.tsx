@@ -7,12 +7,16 @@ import { useNotes } from "@/hooks/useNotes";
 import { NoteCard } from "@/components/ui/NoteCard";
 import { NoteForm } from "@/components/ui/NoteForm";
 import { NoteView } from "@/components/ui/NoteView";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { ProfileModal } from "@/components/ui/ProfileModal";
 import { Note } from "@/types/note";
-import { Plus, NotebookPen, LogOut } from "lucide-react";
+import { Plus, NotebookPen, User } from "lucide-react";
 
 export default function Dashboard() {
   const [userId, setUserId] = useState<string | undefined>();
+  const [user, setUser] = useState<any>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const router = useRouter();
 
   // Route Protection & Auth State listener
@@ -29,6 +33,7 @@ export default function Dashboard() {
         router.push("/login");
       } else if (session) {
         setUserId(session.user.id);
+        setUser(session.user);
       }
       setIsAuthLoading(false);
     };
@@ -39,9 +44,11 @@ export default function Dashboard() {
       (event, session) => {
         if (event === "SIGNED_OUT") {
           setUserId(undefined);
+          setUser(null);
           router.push("/login");
         } else if (session) {
           setUserId(session.user.id);
+          setUser(session.user);
           setIsAuthLoading(false);
         }
       }
@@ -65,7 +72,7 @@ export default function Dashboard() {
   // Prevent hydration mismatch & unauthorized flashing
   if (isAuthLoading || (!isLoaded && userId)) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-pulse flex flex-col items-center gap-4">
           <NotebookPen className="w-12 h-12 text-accent/50" />
           <p className="text-muted font-medium">Loading Aura Workspace...</p>
@@ -139,28 +146,38 @@ export default function Dashboard() {
             </div>
           </div>
           
-          {/* Mobile Logout (shows up next to logo on mobile only) */}
+          {/* Mobile Profile Trigger */}
           <button 
-            onClick={handleLogout}
-            className="md:hidden p-2 text-muted hover:text-foreground hover:bg-surface-hover rounded-xl transition-colors"
-            title="Đăng xuất"
+            onClick={() => setIsProfileOpen(true)}
+            className="md:hidden w-10 h-10 rounded-full border border-border bg-surface overflow-hidden flex items-center justify-center"
           >
-            <LogOut className="w-5 h-5" />
+            {user?.user_metadata?.avatar_url ? (
+              <img src={user.user_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <User className="w-5 h-5 text-muted" />
+            )}
           </button>
         </div>
 
         <div className="flex items-center gap-4 w-full md:w-auto justify-end">
+          <ThemeToggle />
+          
           <button 
-            onClick={handleLogout}
-            className="hidden md:flex p-3 text-muted hover:text-danger hover:bg-danger-transparent rounded-xl transition-colors"
-            title="Đăng xuất"
+            onClick={() => setIsProfileOpen(true)}
+            className="hidden md:flex w-11 h-11 rounded-full border border-border bg-surface hover:border-accent transition-all overflow-hidden flex items-center justify-center group shadow-sm"
+            title="Tài khoản"
           >
-            <LogOut className="w-5 h-5" />
+            {user?.user_metadata?.avatar_url ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img src={user.user_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+            ) : (
+              <User className="w-6 h-6 text-muted group-hover:text-accent transition-colors" />
+            )}
           </button>
 
           <button 
             onClick={handleCreateNew}
-            className="group relative px-6 py-3 bg-foreground text-surface font-semibold rounded-2xl flex items-center justify-center w-full md:w-auto gap-2 hover:bg-foreground/90 transition-all shadow-md hover:shadow-lg hover:-translate-y-1 overflow-hidden"
+            className="group relative px-6 py-3 bg-btn-bg text-btn-text font-semibold rounded-2xl flex items-center justify-center w-full md:w-auto gap-2 hover:opacity-90 transition-all shadow-md hover:shadow-lg hover:-translate-y-1 overflow-hidden"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
             <Plus className="w-5 h-5" />
@@ -215,6 +232,13 @@ export default function Dashboard() {
           note={viewingNote} 
           onClose={() => setViewingNote(undefined)} 
           onToggleComplete={toggleCompleted}
+        />
+      )}
+      {isProfileOpen && (
+        <ProfileModal 
+          user={user} 
+          onClose={() => setIsProfileOpen(false)} 
+          onLogout={handleLogout} 
         />
       )}
     </main>

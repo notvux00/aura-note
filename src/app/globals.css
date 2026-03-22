@@ -2,16 +2,19 @@
 @plugin "@tailwindcss/typography";
 
 @theme inline {
-  --color-background: #FAFAFA;
-  --color-surface: #FFFFFF;
-  --color-surface-hover: #F8FAFC;
-  --color-border: #E2E8F0;
-  --color-foreground: #1E293B;
-  --color-muted: #64748B;
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-border: var(--border);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
   
-  --color-accent: #10B981;
-  --color-accent-hover: #059669;
-  --color-accent-transparent: rgba(16, 185, 129, 0.1);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-transparent: var(--accent-transparent);
+  
+  --color-btn-bg: var(--btn-bg);
+  --color-btn-text: var(--btn-text);
   
   --color-danger: #EF4444;
   --color-danger-transparent: rgba(239, 68, 68, 0.1);
@@ -23,33 +26,66 @@
   --font-mono: var(--font-geist-mono);
 }
 
+:root {
+  --background: #FAFAFA;
+  --surface: #FFFFFF;
+  --surface-hover: #F8FAFC;
+  --border: #E2E8F0;
+  --foreground: #1E293B;
+  --muted: #64748B;
+  --accent: #10B981;
+  --accent-hover: #059669;
+  --accent-transparent: rgba(16, 185, 129, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(226, 232, 240, 0.8);
+  --btn-bg: #1E293B;
+  --btn-text: #FFFFFF;
+}
+
+.dark {
+  --background: #020617; /* Slate 950 */
+  --surface: #1E293B;    /* Slate 800 - Lighter for Better Card Contrast */
+  --surface-hover: #334155; /* Slate 700 */
+  --border: #334155;
+  --foreground: #F8FAFC;
+  --muted: #94A3B8;
+  --accent: #10B981;
+  --accent-hover: #34D399;
+  --accent-transparent: rgba(16, 185, 129, 0.15);
+  --glass-bg: rgba(30, 41, 59, 0.85); /* More opaque slate 800 */
+  --glass-border: rgba(71, 85, 105, 0.5); /* More visible borders */
+  --btn-bg: #F8FAFC;
+  --btn-text: #020617;
+}
+
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
   font-family: var(--font-sans), sans-serif;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
-  /* Soft, vibrant background gradients replacing the dark mesh */
+  /* Soft, vibrant background gradients */
   background-image: 
-    radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 10% 20%, var(--accent-transparent) 0%, transparent 40%),
     radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 40%);
   background-attachment: fixed;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 @layer utilities {
   .glass-panel {
-    background-color: rgba(255, 255, 255, 0.85);
+    background-color: var(--glass-bg);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(226, 232, 240, 0.8);
+    border: 1px solid var(--glass-border);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
   }
 
   .glass-panel-accent {
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: var(--glass-bg);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(16, 185, 129, 0.3);
+    border: 1px solid var(--accent);
     box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.1), 0 8px 10px -6px rgba(16, 185, 129, 0.05);
   }
 }
