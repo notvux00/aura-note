@@ -20,9 +20,14 @@ export default function Dashboard() {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       
-      if (!session) {
+      // Check if we are currently handling an OAuth redirect
+      const hasAuthParams = window.location.hash.includes("access_token") || 
+                           window.location.hash.includes("error") ||
+                           window.location.search.includes("code=");
+
+      if (!session && !hasAuthParams) {
         router.push("/login");
-      } else {
+      } else if (session) {
         setUserId(session.user.id);
       }
       setIsAuthLoading(false);
@@ -31,11 +36,13 @@ export default function Dashboard() {
     checkUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event: unknown, session: any) => {
-        if (!session) {
+      (event, session) => {
+        if (event === "SIGNED_OUT") {
+          setUserId(undefined);
           router.push("/login");
-        } else {
+        } else if (session) {
           setUserId(session.user.id);
+          setIsAuthLoading(false);
         }
       }
     );
@@ -171,7 +178,7 @@ export default function Dashboard() {
             </div>
             <h3 className="text-xl font-medium text-foreground mb-2">Workspace is empty</h3>
             <p className="text-muted max-w-sm">
-              You don't have any notes or reminders yet. Create a new note to get started.
+              You don&apos;t have any notes or reminders yet. Create a new note to get started.
             </p>
             <button 
               onClick={handleCreateNew}
